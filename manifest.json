@@ -1,0 +1,19 @@
+{
+  "name": "Careder - Care + Together",
+  "short_name": "Careder",
+  "description": "แอปสำหรับผู้ดูแลผู้สูงอายุและผู้ป่วย มาแชร์ประสบการณ์และเคล็ดลับการดูแลร่วมกัน",
+  "lang": "th",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F2E8",
+  "theme_color": "#4F7360",
+  "categories": ["health", "lifestyle", "social"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
