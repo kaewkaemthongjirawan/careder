@@ -1633,6 +1633,61 @@ renderGreeting();
   pick();
 })();
 
+// ---------- ฐานข้อมูลกลาง (Firebase Firestore ผ่าน REST + Anonymous Auth) ----------
+(function () {
+  const C = window.CAREDER_CLOUD;
+  const ok = !!(C && C.apiKey && C.projectId);
+  const AK = 'careder_fb_auth';
+  const FS = ok ? 'https://firestore.googleapis.com/v1/projects/' + C.projectId + '/databases/(default)/documents' : '';
+  let auth = null; try { auth = JSON.parse(localStorage.getItem(AK) || 'null'); } catch (_) {}
+  const saveAuth = () => { try { localStorage.setItem(AK, JSON.stringify(auth)); } catch (_) {} };
+  async function jf(url, opt, tries) {
+    const r = await fetch(url, opt); const t = await r.text(); let j = {}; try { j = JSON.parse(t); } catch (_) {}
+    if (!r.ok) { const e = new Error((j.error && j.error.message) || r.status); e.status = r.status; throw e; }
+    return j;
+  }
+  async function signUp() {
+    const j = await jf('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + C.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ returnSecureToken: true }) });
+    auth = { uid: j.localId, id: j.idToken, rf: j.refreshToken, exp: Date.now() + (+j.expiresIn - 120) * 1000 }; saveAuth();
+  }
+  async function refresh() {
+    const j = await jf('https://securetoken.googleapis.com/v1/token?key=' + C.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(auth.rf) });
+    auth = { uid: j.user_id, id: j.id_token, rf: j.refresh_token, exp: Date.now() + (+j.expires_in - 120) * 1000 }; saveAuth();
+  }
+  async function token() {
+    if (!auth) await signUp();
+    else if (Date.now() > auth.exp) { try { await refresh(); } catch (_) { auth = null; await signUp(); } }
+    return auth.id;
+  }
+  async function api(path, body) {
+    const t = await token();
+    return jf(FS + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify(body) });
+  }
+  const S = v => ({ stringValue: String(v) });
+  const val = f => f ? (f.stringValue !== undefined ? f.stringValue : f.integerValue !== undefined ? +f.integerValue : f.timestampValue !== undefined ? Date.parse(f.timestampValue) : f.arrayValue ? (f.arrayValue.values || []).map(val) : f.mapValue ? Object.fromEntries(Object.entries(f.mapValue.fields || {}).map(([k, x]) => [k, val(x)])) : null) : null;
+  const toPost = d => { const f = d.fields || {}; return { id: d.name.split('/').pop(), uid: val(f.uid), name: val(f.name) || 'ผู้ใช้', avatar: val(f.avatar) || '', topic: val(f.topic) || 'share', text: val(f.text) || '', ts: val(f.createdAt) || 0, likedBy: val(f.likedBy) || [], comments: val(f.comments) || [] }; };
+  const docName = id => 'projects/' + C.projectId + '/databases/(default)/documents/posts/' + id;
+  const tf = (id, field, kind, v) => ({ writes: [{ transform: { document: docName(id), fieldTransforms: [{ fieldPath: field, [kind]: { values: [v] } }] } }] });
+  window.CCloud = {
+    enabled: ok,
+    uid: () => auth && auth.uid,
+    async init() { await token(); return auth.uid; },
+    async list() {
+      const r = await api(':runQuery', { structuredQuery: { from: [{ collectionId: 'posts' }], orderBy: [{ field: { fieldPath: 'createdAt' }, direction: 'DESCENDING' }], limit: 60 } });
+      return r.filter(x => x.document).map(x => toPost(x.document));
+    },
+    async create(p) {
+      await token();
+      const fields = { uid: S(auth.uid), name: S(p.name), topic: S(p.topic), text: S(p.text), createdAt: { timestampValue: new Date().toISOString() }, likedBy: { arrayValue: {} }, comments: { arrayValue: {} } };
+      if (p.avatar) fields.avatar = S(p.avatar);
+      const d = await api('/posts', { fields });
+      return toPost(d);
+    },
+    like(id, on) { return api(':commit', tf(id, 'likedBy', on ? 'appendMissingElements' : 'removeAllFromArray', S(auth.uid))); },
+    comment(id, c) { return api(':commit', tf(id, 'comments', 'appendMissingElements', { mapValue: { fields: { uid: S(auth.uid), n: S(c.n), t: S(c.t), at: { integerValue: String(Date.now()) } } } })); }
+  };
+})();
+
 // ---------- Care Community: กรองหัวข้อ + ค้นหา + กดใจ / คอมเมนต์ / บันทึก ----------
 (function () {
   const root = document.getElementById('s-community');
@@ -1656,12 +1711,15 @@ renderGreeting();
   ];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const myName = () => { let n = ''; try { n = localStorage.getItem('careder_name') || ''; } catch (_) {} return n ? 'คุณ' + n : 'ฉัน'; };
-  const comments = id => (SEED[id] || []).concat((st.cm[id] || []).map(c => [c.n, c.t]));
+  const cloudMap = {};
+  const isC = id => typeof id === 'string' && id.startsWith('c:');
+  const comments = id => isC(id) ? ((cloudMap[id.slice(2)] || {}).comments || []).map(c => [c.n, c.t]) : (SEED[id] || []).concat((st.cm[id] || []).map(c => [c.n, c.t]));
   const baseOf = id => BASE[id] || 0;
   const getPost = id => feed.querySelector('[data-post][data-id="' + id + '"]');
   let f = 'all', open = -1;
 
   function paintPost(p) {
+    if (isC(p.dataset.id)) return paintCloud(p);
     const id = +p.dataset.id, L = !!st.lk[id], S = !!st.sv[id];
     const like = p.querySelector('[data-act=like]'), sv = p.querySelector('[data-act=save]'), cm = p.querySelector('[data-act=comment]');
     like.setAttribute('aria-pressed', L); like.querySelector('[data-n]').textContent = baseOf(id) + (L ? 1 : 0);
@@ -1678,13 +1736,23 @@ renderGreeting();
   function closeSheet() { open = -1; sheet.style.display = 'none'; }
   function send() {
     const t = cin.value.trim(); if (!t || open < 0) return;
+    if (isC(open)) {
+      const r = cloudMap[open.slice(2)]; if (r) { r.comments.push({ uid: CCloud.uid(), n: myName(), t: t.slice(0, 300) }); CCloud.comment(r.id, { n: myName(), t: t.slice(0, 300) }).catch(() => {}); }
+      cin.value = ''; renderList(); paintPost(getPost(open)); return;
+    }
     (st.cm[open] = st.cm[open] || []).push({ n: myName(), t: t.slice(0, 300) });
     save(); cin.value = ''; renderList(); paintPost(getPost(open));
   }
 
   feed.addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
-    const p = b.closest('[data-post]'), id = +p.dataset.id;
+    const p = b.closest('[data-post]'), sid = p.dataset.id, id = isC(sid) ? sid : +sid;
+    if (isC(sid) && b.dataset.act === 'like') {
+      const r = cloudMap[sid.slice(2)], me = CCloud.uid(); if (!r || !me) return;
+      const on = r.likedBy.indexOf(me) < 0;
+      r.likedBy = on ? r.likedBy.concat(me) : r.likedBy.filter(x => x !== me);
+      CCloud.like(r.id, on).catch(() => {}); return paintCloud(p);
+    }
     if (b.dataset.act === 'like') st.lk[id] = !st.lk[id];
     if (b.dataset.act === 'save') st.sv[id] = !st.sv[id];
     if (b.dataset.act === 'comment') return openSheet(id);
@@ -1742,12 +1810,68 @@ renderGreeting();
     myAvatar(p.querySelector('[data-avatar]'));
     return p;
   }
-  window.communityAddPost = r => {
+
+  function paintCloud(p) {
+    const id = p.dataset.id, r = cloudMap[id.slice(2)]; if (!r) return;
+    const L = r.likedBy.indexOf(CCloud.uid()) >= 0, S = !!st.sv[id];
+    const like = p.querySelector('[data-act=like]'), sv = p.querySelector('[data-act=save]'), cm = p.querySelector('[data-act=comment]');
+    like.setAttribute('aria-pressed', L); like.querySelector('[data-n]').textContent = r.likedBy.length;
+    const hs = like.querySelector('svg').style; hs.fill = L ? '#D9695A' : 'none'; hs.stroke = L ? '#D9695A' : '#55635B';
+    sv.setAttribute('aria-pressed', S);
+    const ss = sv.querySelector('svg').style; ss.fill = S ? '#4F7360' : 'none'; ss.stroke = S ? '#4F7360' : '#55635B';
+    cm.querySelector('[data-n]').textContent = r.comments.length;
+  }
+  function buildCloud(r) {
+    const p = buildPost({ id: 'c:' + r.id, topic: r.topic, name: r.name, ts: r.ts, text: r.text });
+    p.dataset.id = 'c:' + r.id;
+    const av = p.querySelector('[data-avatar]');
+    if (r.avatar) av.innerHTML = '<img alt="" src="' + r.avatar + '" style="width:100%;height:100%;object-fit:cover;display:block">'; else av.innerHTML = DEF_AV;
+    return p;
+  }
+  let syncing = false;
+  async function sync() {
+    if (!CCloud.enabled || syncing) return; syncing = true;
+    try {
+      await CCloud.init();
+      const rows = await CCloud.list();
+      Object.keys(cloudMap).forEach(k => delete cloudMap[k]);
+      rows.forEach(r => { cloudMap[r.id] = r; });
+      feed.querySelectorAll('[data-post][data-id^="c:"]').forEach(x => x.remove());
+      const first = feed.querySelector('[data-post]');
+      rows.forEach(r => { const p = buildCloud(r); feed.insertBefore(p, first); paintCloud(p); });
+      if (isC(open)) renderList();
+      paint();
+    } catch (e) { console.warn('cloud sync', e); }
+    syncing = false;
+  }
+  function smallAvatar() {
+    return new Promise(res => {
+      let a = null; try { a = localStorage.getItem('careder_avatar'); } catch (_) {}
+      if (!a) return res('');
+      const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 72; c.getContext('2d').drawImage(img, 0, 0, 72, 72); res(c.toDataURL('image/jpeg', 0.7)); };
+      img.onerror = () => res(''); img.src = a;
+    });
+  }
+  if (CCloud.enabled) {
+    new MutationObserver(() => { if (!root.hidden) sync(); }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
+    setInterval(() => { if (!root.hidden && sheet.style.display !== 'flex' && !document.hidden) sync(); }, 15000);
+    sync();
+  }
+  function localAdd(r) {
     r.id = 100 + mine.length; r.ts = Date.now();
     mine.push(r);
     try { localStorage.setItem(PKEY, JSON.stringify(mine)); } catch (_) {}
     const p = buildPost(r); feed.insertBefore(p, feed.firstChild); paintPost(p);
     f = 'all'; if (q) q.value = ''; paint(); feed.scrollTop = 0;
+  }
+  window.communityAddPost = async r => {
+    if (!CCloud.enabled) return localAdd(r);
+    try {
+      r.avatar = await smallAvatar();
+      const made = await CCloud.create(r);
+      cloudMap[made.id] = made; f = 'all'; if (q) q.value = '';
+      const p = buildCloud(made); feed.insertBefore(p, feed.querySelector('[data-post]')); paintCloud(p); paint(); feed.scrollTop = 0;
+    } catch (e) { console.warn('cloud post', e); localAdd(r); }
   };
   mine.slice().sort((a, b) => a.ts - b.ts).forEach(r => feed.insertBefore(buildPost(r), feed.firstChild));
   allPosts().forEach(paintPost);
