@@ -342,6 +342,7 @@ a{text-decoration:none;cursor:pointer}
 <button data-chip="tech" aria-pressed="false" style="flex: none; height: 44px; border: 1.5px solid #C9D2C4; border-radius: 22px; background: #FFFFFF; color: #25312B; font-size: calc(17px * var(--fs,1)); font-weight: 500; padding: 0 16px; white-space: nowrap">เทคนิคการดูแล</button>
 <button data-chip="mood" aria-pressed="false" style="flex: none; height: 44px; border: 1.5px solid #C9D2C4; border-radius: 22px; background: #FFFFFF; color: #25312B; font-size: calc(17px * var(--fs,1)); font-weight: 500; padding: 0 16px; white-space: nowrap">การจัดการอารมณ์</button>
 <button data-chip="share" aria-pressed="false" style="flex: none; height: 44px; border: 1.5px solid #C9D2C4; border-radius: 22px; background: #FFFFFF; color: #25312B; font-size: calc(17px * var(--fs,1)); font-weight: 500; padding: 0 16px; white-space: nowrap">แชร์ปัญหา</button>
+<button data-chip="cheer" aria-pressed="false" style="flex: none; height: 44px; border: 1.5px solid #C9D2C4; border-radius: 22px; background: #FFFFFF; color: #25312B; font-size: calc(17px * var(--fs,1)); font-weight: 500; padding: 0 16px; white-space: nowrap">ให้กำลังใจ</button>
 </div>
 
 <div data-feed style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 90px">
@@ -424,6 +425,34 @@ a{text-decoration:none;cursor:pointer}
 <div data-text style="font-size: calc(19px * var(--fs,1)); font-weight: 700; line-height: 1.5; padding-right: 4px">กลางคืนคุณแม่ตื่นบ่อยมาก เรานอนไม่พอเลย ใครเจอแบบนี้บ้างคะ</div>
 <div style="display: flex; align-items: center; gap: 8px; color: #55635B; font-size: calc(17px * var(--fs,1))">
 <button data-act="like" aria-label="ถูกใจ" aria-pressed="false" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #55635B; stroke-width: 2; stroke-linejoin: round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span data-n>73</span></button>
+<button data-act="comment" aria-label="แสดงความคิดเห็น" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#55635B" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg><span data-n>2</span></button>
+<span style="flex: 1"></span>
+<button data-act="save" aria-label="บันทึกโพสต์" aria-pressed="false" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer; width: 44px; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #55635B; stroke-width: 2; stroke-linejoin: round"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg></button>
+</div>
+</div>
+<div data-topic="cheer" data-post data-id="6" style="background: #FFFFFF; border-radius: 20px; border: 1px solid #E3E6DA; padding: 16px 12px 6px 16px; display: flex; flex-direction: column; gap: 8px; flex: none">
+<div style="display: flex; align-items: center; gap: 10px; padding-right: 4px">
+<div data-avatar style="width: 44px; height: 44px; border-radius: 22px; overflow: hidden; background: #F6E8C9; flex: none"><svg width="44" height="44" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="12" r="10" fill="#5A3E33"></circle><path d="M14 100c0-24 14-34 36-34s36 10 36 34z" fill="#E3B65C"></path><rect x="43" y="58" width="14" height="14" rx="6" fill="#F6D2B8"></rect><ellipse cx="50" cy="40" rx="29" ry="28" fill="#5A3E33"></ellipse><circle cx="50" cy="46" r="25" fill="#F8D6BC"></circle><path d="M24 44Q26 17 50 17Q74 17 76 44Q66 28 50 30Q34 28 24 44z" fill="#5A3E33"></path><ellipse cx="40" cy="48" rx="3.2" ry="4.2" fill="#3A2A24"></ellipse><ellipse cx="60" cy="48" rx="3.2" ry="4.2" fill="#3A2A24"></ellipse><ellipse cx="33" cy="56" rx="5.5" ry="3.5" fill="#F2A094" opacity="0.6"></ellipse><ellipse cx="67" cy="56" rx="5.5" ry="3.5" fill="#F2A094" opacity="0.6"></ellipse><path d="M44 58q6 5 12 0" stroke="#B5584A" stroke-width="2" fill="none" stroke-linecap="round"></path></svg></div>
+<div style="display: flex; flex-direction: column; flex: 1"><span data-name style="font-size: calc(18px * var(--fs,1)); font-weight: 700">คุณอ้อม</span><span data-time style="font-size: calc(15px * var(--fs,1)); color: #55635B">30 นาทีที่แล้ว</span></div>
+<span data-pill style="background: #FCEFD2; color: #7A5A12; font-size: calc(15px * var(--fs,1)); font-weight: 700; padding: 4px 11px; border-radius: 999px">ให้กำลังใจ</span>
+</div>
+<div data-text style="font-size: calc(19px * var(--fs,1)); font-weight: 700; line-height: 1.5; padding-right: 4px">วันนี้เหนื่อยแค่ไหน คุณก็ทำได้ดีมากแล้วนะคะ ขอบคุณที่ดูแลคนที่รักเต็มที่เสมอ</div>
+<div style="display: flex; align-items: center; gap: 8px; color: #55635B; font-size: calc(17px * var(--fs,1))">
+<button data-act="like" aria-label="ถูกใจ" aria-pressed="false" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #55635B; stroke-width: 2; stroke-linejoin: round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span data-n>142</span></button>
+<button data-act="comment" aria-label="แสดงความคิดเห็น" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#55635B" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg><span data-n>2</span></button>
+<span style="flex: 1"></span>
+<button data-act="save" aria-label="บันทึกโพสต์" aria-pressed="false" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer; width: 44px; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #55635B; stroke-width: 2; stroke-linejoin: round"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg></button>
+</div>
+</div>
+<div data-topic="cheer" data-post data-id="7" style="background: #FFFFFF; border-radius: 20px; border: 1px solid #E3E6DA; padding: 16px 12px 6px 16px; display: flex; flex-direction: column; gap: 8px; flex: none">
+<div style="display: flex; align-items: center; gap: 10px; padding-right: 4px">
+<div data-avatar style="width: 44px; height: 44px; border-radius: 22px; overflow: hidden; background: #E3EDF0; flex: none"><svg width="44" height="44" viewBox="0 0 100 100" aria-hidden="true"><path d="M14 100c0-24 14-34 36-34s36 10 36 34z" fill="#7FA3B5"></path><rect x="43" y="58" width="14" height="14" rx="6" fill="#F3CDB0"></rect><path d="M20 62Q14 20 50 16Q86 20 80 62Q78 44 50 40Q22 44 20 62z" fill="#2E2622"></path><circle cx="50" cy="46" r="25" fill="#F6D2B8"></circle><path d="M25 42Q30 20 50 20Q70 20 75 42Q64 30 50 32Q36 30 25 42z" fill="#2E2622"></path><ellipse cx="40" cy="48" rx="3.2" ry="4.2" fill="#3A2A24"></ellipse><ellipse cx="60" cy="48" rx="3.2" ry="4.2" fill="#3A2A24"></ellipse><ellipse cx="33" cy="56" rx="5.5" ry="3.5" fill="#F2A094" opacity="0.6"></ellipse><ellipse cx="67" cy="56" rx="5.5" ry="3.5" fill="#F2A094" opacity="0.6"></ellipse><path d="M44 58q6 5 12 0" stroke="#B5584A" stroke-width="2" fill="none" stroke-linecap="round"></path></svg></div>
+<div style="display: flex; flex-direction: column; flex: 1"><span data-name style="font-size: calc(18px * var(--fs,1)); font-weight: 700">คุณธีร์</span><span data-time style="font-size: calc(15px * var(--fs,1)); color: #55635B">2 ชม. ที่แล้ว</span></div>
+<span data-pill style="background: #FCEFD2; color: #7A5A12; font-size: calc(15px * var(--fs,1)); font-weight: 700; padding: 4px 11px; border-radius: 999px">ให้กำลังใจ</span>
+</div>
+<div data-text style="font-size: calc(19px * var(--fs,1)); font-weight: 700; line-height: 1.5; padding-right: 4px">ใครกำลังท้ออยู่ ส่งกำลังใจให้ครับ เราไม่ได้ดูแลคนเดียว ผลัดกันพักบ้างนะครับ</div>
+<div style="display: flex; align-items: center; gap: 8px; color: #55635B; font-size: calc(17px * var(--fs,1))">
+<button data-act="like" aria-label="ถูกใจ" aria-pressed="false" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #55635B; stroke-width: 2; stroke-linejoin: round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span data-n>96</span></button>
 <button data-act="comment" aria-label="แสดงความคิดเห็น" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#55635B" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg><span data-n>2</span></button>
 <span style="flex: 1"></span>
 <button data-act="save" aria-label="บันทึกโพสต์" aria-pressed="false" style="display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px; border: 0; background: transparent; color: #55635B; font-size: calc(17px * var(--fs,1)); font-family: inherit; cursor: pointer; width: 44px; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #55635B; stroke-width: 2; stroke-linejoin: round"><path d="M7 4h10v16l-5-3.5L7 20z"></path></svg></button>
@@ -606,20 +635,25 @@ a{text-decoration:none;cursor:pointer}
 </div>
 
 <div style="font-size: calc(18px * var(--fs,1)); font-weight: 700; margin-bottom: -4px">เลือกหมวดหมู่</div>
-<div role="radiogroup" aria-label="หมวดหมู่" style="display: flex; flex-direction: column; gap: 8px">
-<button data-cat="tech" role="radio" aria-checked="false" aria-label="เทคนิคการดูแล" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 64px; box-sizing: border-box; padding: 10px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
+<div role="radiogroup" aria-label="หมวดหมู่" style="display: flex; flex-direction: column; gap: 6px">
+<button data-cat="tech" role="radio" aria-checked="false" aria-label="เทคนิคการดูแล" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 56px; box-sizing: border-box; padding: 6px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
 <span style="width: 40px; height: 40px; border-radius: 20px; background: #E6EEE3; display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34503F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.7.6 1 1.3 1 2.1h5c0-.8.3-1.5 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
 <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: calc(19px * var(--fs,1)); font-weight: 700">เทคนิคการดูแล</span><span style="font-size: calc(16px * var(--fs,1)); color: #55635B">แบ่งปันวิธีที่ลองแล้วได้ผล</span></span>
 <span data-ck style="width: 26px; height: 26px; border-radius: 13px; background: #4F7360; display: none; align-items: center; justify-content: center; flex: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
 </button>
-<button data-cat="mood" role="radio" aria-checked="false" aria-label="การจัดการอารมณ์" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 64px; box-sizing: border-box; padding: 10px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
+<button data-cat="mood" role="radio" aria-checked="false" aria-label="การจัดการอารมณ์" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 56px; box-sizing: border-box; padding: 6px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
 <span style="width: 40px; height: 40px; border-radius: 20px; background: #F8E4D6; display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A4B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>
 <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: calc(19px * var(--fs,1)); font-weight: 700">การจัดการอารมณ์</span><span style="font-size: calc(16px * var(--fs,1)); color: #55635B">วิธีดูแลใจตัวเองและคนที่เรารัก</span></span>
 <span data-ck style="width: 26px; height: 26px; border-radius: 13px; background: #4F7360; display: none; align-items: center; justify-content: center; flex: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
 </button>
-<button data-cat="share" role="radio" aria-checked="false" aria-label="แชร์ปัญหา" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 64px; box-sizing: border-box; padding: 10px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
+<button data-cat="share" role="radio" aria-checked="false" aria-label="แชร์ปัญหา" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 56px; box-sizing: border-box; padding: 6px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
 <span style="width: 40px; height: 40px; border-radius: 20px; background: #E3E8F3; display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A4A78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></span>
 <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: calc(19px * var(--fs,1)); font-weight: 700">แชร์ปัญหา</span><span style="font-size: calc(16px * var(--fs,1)); color: #55635B">เล่าเรื่องที่กำลังเจอ ให้เพื่อนช่วยแนะนำ</span></span>
+<span data-ck style="width: 26px; height: 26px; border-radius: 13px; background: #4F7360; display: none; align-items: center; justify-content: center; flex: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
+</button>
+<button data-cat="cheer" role="radio" aria-checked="false" aria-label="ให้กำลังใจ" style="width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 56px; box-sizing: border-box; padding: 6px 14px; border-radius: 18px; border: 2px solid #E3E6DA; background: #FFFFFF; color: #25312B">
+<span style="width: 40px; height: 40px; border-radius: 20px; background: #FCEFD2; display: flex; align-items: center; justify-content: center; flex: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A5A12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: calc(19px * var(--fs,1)); font-weight: 700">ให้กำลังใจ</span><span style="font-size: calc(16px * var(--fs,1)); color: #55635B">ส่งต่อพลังใจให้เพื่อนผู้ดูแล</span></span>
 <span data-ck style="width: 26px; height: 26px; border-radius: 13px; background: #4F7360; display: none; align-items: center; justify-content: center; flex: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
 </button>
 </div>
@@ -629,6 +663,7 @@ a{text-decoration:none;cursor:pointer}
 <textarea id="np-txt" maxlength="200" placeholder="เล่าเรื่องของคุณ หรือถามเพื่อนผู้ดูแลได้เลยค่ะ..." style="height: 116px; box-sizing: border-box; border: 1.5px solid #C9C2B2; border-radius: 16px; background: #FFFFFF; padding: 12px 14px; font-size: calc(18px * var(--fs,1)); line-height: 1.5; color: #25312B; resize: none"></textarea>
 <div style="display: flex; justify-content: space-between; font-size: calc(15px * var(--fs,1)); color: #55635B"><span>ไม่ต้องใช้ชื่อหรือข้อมูลจริงของผู้ป่วย</span><span id="np-cnt">0 / 200</span></div>
 </div>
+<div style="display: flex; align-items: center; gap: 10px"><button type="button" aria-label="เพิ่มรูปในโพสต์" style="height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 22px; border: 1.5px dashed #A9B6AC; background: #EFEADC; color: #3C5A49; font-size: calc(17px * var(--fs,1)); font-weight: 700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3C5A49" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="11" r="2"></circle><path d="M21 16l-5-5-8 8"></path></svg>เพิ่มรูป</button><span style="font-size: calc(15px * var(--fs,1)); color: #55635B">แนบรูปประกอบโพสต์ได้ 1 รูป (ไม่บังคับ)</span></div>
 
 <div style="flex: 1"></div>
 <button id="np-post" disabled style="height: 54px; border-radius: 27px; font-size: calc(20px * var(--fs,1)); font-weight: 700; align-items: center; justify-content: center; width: 100%; border: 0; background: #D5DCD2; color: #FFFFFF; display: flex">โพสต์</button>
@@ -1719,7 +1754,7 @@ renderGreeting();
   }
   const S = v => ({ stringValue: String(v) });
   const val = f => f ? (f.stringValue !== undefined ? f.stringValue : f.integerValue !== undefined ? +f.integerValue : f.timestampValue !== undefined ? Date.parse(f.timestampValue) : f.arrayValue ? (f.arrayValue.values || []).map(val) : f.mapValue ? Object.fromEntries(Object.entries(f.mapValue.fields || {}).map(([k, x]) => [k, val(x)])) : null) : null;
-  const toPost = d => { const f = d.fields || {}; return { id: d.name.split('/').pop(), uid: val(f.uid), name: val(f.name) || 'ผู้ใช้', avatar: val(f.avatar) || '', topic: val(f.topic) || 'share', text: val(f.text) || '', ts: val(f.createdAt) || 0, likedBy: val(f.likedBy) || [], comments: val(f.comments) || [] }; };
+  const toPost = d => { const f = d.fields || {}; return { id: d.name.split('/').pop(), uid: val(f.uid), name: val(f.name) || 'ผู้ใช้', avatar: val(f.avatar) || '', topic: val(f.topic) || 'share', image: val(f.image) || '', text: val(f.text) || '', ts: val(f.createdAt) || 0, likedBy: val(f.likedBy) || [], comments: val(f.comments) || [] }; };
   const docName = id => 'projects/' + C.projectId + '/databases/(default)/documents/posts/' + id;
   const tf = (id, field, kind, v) => ({ writes: [{ transform: { document: docName(id), fieldTransforms: [{ fieldPath: field, [kind]: { values: [v] } }] } }] });
   window.CCloud = {
@@ -1734,6 +1769,7 @@ renderGreeting();
       await token();
       const fields = { uid: S(auth.uid), name: S(p.name), topic: S(p.topic), text: S(p.text), createdAt: { timestampValue: new Date().toISOString() }, likedBy: { arrayValue: {} }, comments: { arrayValue: {} } };
       if (p.avatar) fields.avatar = S(p.avatar);
+      if (p.image) fields.image = S(p.image);
       const d = await api('/posts', { fields });
       return toPost(d);
     },
@@ -1754,14 +1790,16 @@ renderGreeting();
   let st = { lk: {}, sv: {}, cm: {} };
   try { st = Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (_) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (_) {} };
-  const BASE = [97, 64, 85, 52, 128, 73];
+  const BASE = [97, 64, 85, 52, 128, 73, 142, 96];
   const SEED = [
     [['คุณมายด์', 'ลองตามนี้แล้วท่านให้ความร่วมมือดีขึ้นจริงค่ะ'], ['คุณพีท', 'ขอบคุณที่แชร์นะครับ จะลองกับคุณพ่อดู']],
     [['คุณนุ่น', 'ได้ผลเหมือนกันค่ะ คุณยายทานได้เยอะขึ้น'], ['คุณบอย', 'เคล็ดลับดีมากครับ']],
     [['คุณแอน', 'เพิ่งลองเมื่อคืน ใจเย็นลงจริงๆ ค่ะ'], ['คุณสมศรี', 'ดีมากเลยจ้ะ ทำเป็นประจำได้ผลนะ']],
     [['คุณเจน', 'ชอบแนวคิดนี้มากค่ะ จะเริ่มทำบ้าง'], ['คุณฝน', 'เดินตอนเย็นช่วยจริงๆ ค่ะ']],
     [['คุณนัท', 'ลองเปิดเพลงที่ท่านชอบตอนอาบน้ำดูไหมคะ'], ['คุณธีร์', 'ลองให้ท่านเลือกสบู่กลิ่นที่ชอบครับ ได้ผลกับคุณแม่ผม']],
-    [['คุณอ้อม', 'เข้าใจเลยค่ะ ลองปรับแสงไฟห้องให้สลัวดูนะคะ'], ['คุณเก่ง', 'สู้ๆ นะครับ ผลัดกันนอนกับญาติได้ไหมครับ']]
+    [['คุณอ้อม', 'เข้าใจเลยค่ะ ลองปรับแสงไฟห้องให้สลัวดูนะคะ'], ['คุณเก่ง', 'สู้ๆ นะครับ ผลัดกันนอนกับญาติได้ไหมครับ']],
+    [['คุณมายด์', 'ขอบคุณนะคะ อ่านแล้วใจฟูเลย'], ['คุณพีท', 'ขอบคุณครับ ได้กำลังใจมากเลย']],
+    [['คุณนัท', 'ขอบคุณที่ส่งกำลังใจนะคะ'], ['คุณแอน', 'สู้ไปด้วยกันนะคะ']]
   ];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const myName = () => { let n = ''; try { n = localStorage.getItem('careder_name') || ''; } catch (_) {} return n ? 'คุณ' + n : 'ฉัน'; };
@@ -1842,7 +1880,7 @@ renderGreeting();
   chips.forEach(c => c.addEventListener('click', () => { f = c.dataset.chip; paint(); }));
   if (q) q.addEventListener('input', paint);
   // ----- โพสต์ที่ผู้ใช้สร้างเอง -----
-  const TOPIC = { tech: ['เทคนิคการดูแล', '#E6EEE3', '#34503F'], mood: ['การจัดการอารมณ์', '#F8E4D6', '#8A4B2E'], share: ['แชร์ปัญหา', '#E3E8F3', '#3A4A78'] };
+  const TOPIC = { tech: ['เทคนิคการดูแล', '#E6EEE3', '#34503F'], mood: ['การจัดการอารมณ์', '#F8E4D6', '#8A4B2E'], share: ['แชร์ปัญหา', '#E3E8F3', '#3A4A78'], cheer: ['ให้กำลังใจ', '#FCEFD2', '#7A5A12'] };
   const PKEY = 'careder_posts_v1';
   let mine = [];
   try { mine = JSON.parse(localStorage.getItem(PKEY) || '[]'); } catch (_) {}
@@ -1860,6 +1898,7 @@ renderGreeting();
     p.querySelector('[data-time]').textContent = ago(r.ts);
     const pill = p.querySelector('[data-pill]'); pill.textContent = T[0]; pill.style.background = T[1]; pill.style.color = T[2];
     p.querySelector('[data-text]').textContent = r.text;
+    if (r.image) { const im = document.createElement('img'); im.alt = 'รูปในโพสต์'; im.src = r.image; im.style.cssText = 'width:100%;max-height:260px;object-fit:cover;border-radius:14px;display:block'; p.querySelector('[data-text]').after(im); }
     [...p.querySelectorAll('span')].forEach(s => { if (s.textContent.trim() === 'ลองแล้วได้ผล') s.remove(); });
     myAvatar(p.querySelector('[data-avatar]'));
     return p;
@@ -1876,7 +1915,7 @@ renderGreeting();
     cm.querySelector('[data-n]').textContent = r.comments.length;
   }
   function buildCloud(r) {
-    const p = buildPost({ id: 'c:' + r.id, topic: r.topic, name: r.name, ts: r.ts, text: r.text });
+    const p = buildPost({ id: 'c:' + r.id, topic: r.topic, name: r.name, ts: r.ts, text: r.text, image: r.image });
     p.dataset.id = 'c:' + r.id;
     const av = p.querySelector('[data-avatar]');
     if (r.avatar) av.innerHTML = '<img alt="" src="' + r.avatar + '" style="width:100%;height:100%;object-fit:cover;display:block">'; else av.innerHTML = DEF_AV;
@@ -1938,7 +1977,23 @@ renderGreeting();
   const cards = [...root.querySelectorAll('[data-cat]')], txt = root.querySelector('#np-txt'), cnt = root.querySelector('#np-cnt'), btn = root.querySelector('#np-post');
   const av = root.querySelector('[data-np-avatar]');
   window.communityDefaultAvatar = av.innerHTML;
-  let cat = '';
+  let cat = '', image = '';
+  const pbtn = root.querySelector('button[aria-label="เพิ่มรูปในโพสต์"]');
+  const pin = document.createElement('input'); pin.type = 'file'; pin.accept = 'image/*'; pin.hidden = true; root.appendChild(pin);
+  const pbtnHtml = pbtn.innerHTML, hintEl = pbtn.nextElementSibling;
+  function shrink(file, max) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.72)); };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad')); }; img.src = url;
+    });
+  }
+  function paintPhoto() {
+    if (image) { pbtn.innerHTML = '<img alt="รูปที่แนบ" src="' + image + '" style="width:36px;height:36px;border-radius:8px;object-fit:cover">ลบรูป'; hintEl.textContent = 'แตะ "ลบรูป" เพื่อเอาออก'; }
+    else { pbtn.innerHTML = pbtnHtml; hintEl.textContent = 'แนบรูปประกอบโพสต์ได้ 1 รูป (ไม่บังคับ)'; }
+  }
+  pbtn.addEventListener('click', () => { if (image) { image = ''; pin.value = ''; paintPhoto(); } else pin.click(); });
+  pin.addEventListener('change', async () => { const f = pin.files && pin.files[0]; if (!f) return; try { image = await shrink(f, 720); paintPhoto(); } catch (_) { alert('ไม่สามารถเปิดไฟล์รูปนี้ได้'); } });
   function paint() {
     cards.forEach(c => {
       const on = c.dataset.cat === cat;
@@ -1962,8 +2017,8 @@ renderGreeting();
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
     let n = ''; try { n = localStorage.getItem('careder_name') || ''; } catch (_) {}
-    window.communityAddPost({ topic: cat, text: txt.value.trim(), name: n ? 'คุณ' + n : 'ผู้ใช้ใหม่' });
-    cat = ''; txt.value = ''; paint();
+    window.communityAddPost({ topic: cat, text: txt.value.trim(), image, name: n ? 'คุณ' + n : 'ผู้ใช้ใหม่' });
+    cat = ''; txt.value = ''; image = ''; pin.value = ''; paintPhoto(); paint();
     history.pop(); go('community', true);
   });
   new MutationObserver(() => { if (!root.hidden) who(); }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
