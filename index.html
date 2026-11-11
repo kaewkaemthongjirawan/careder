@@ -766,6 +766,7 @@ addEventListener('touchstart',e=>{const q=e.changedTouches[0];sx=q.clientX;sy=q.
 addEventListener('touchend',e=>{if(!ok)return;ok=false;const q=e.changedTouches[0],dx=q.clientX-sx,dy=q.clientY-sy;
  if(dx<70*Math.min(innerWidth/390,1)||Math.abs(dy)>Math.abs(dx)*0.5||Date.now()-t0>800)return;
  const cur=document.querySelector('.screen:not([hidden])');if(!cur)return;
+ if(cur.id==='s-match')return;
  const b=Array.from(cur.querySelectorAll('[aria-label="ย้อนกลับ"]')).find(x=>x.offsetParent!==null);if(b)b.click();},{capture:true,passive:true});})();
 
 let history=[];
@@ -1305,6 +1306,8 @@ renderGreeting();
   const nameEl = card.querySelector('div[style*="calc(24px"]');
   const descEl = nameEl.nextElementSibling, tagsEl = descEl.nextElementSibling;
   const skipBtn = root.querySelector('button[aria-label="ข้าม"]'), likeBtn = root.querySelector('button[aria-label="อยากคุยด้วย"]');
+  if (likeBtn) likeBtn.remove();
+  skipBtn.parentNode.style.justifyContent = 'center';
   const TAG = 'background:#E6EEE3;color:#34503F;font-size:calc(16px * var(--fs,1));font-weight:500;padding:6px 14px;border-radius:999px';
 
   const P = CARE_PROFILES, char = careChar;
@@ -1316,7 +1319,10 @@ renderGreeting();
   toast.setAttribute('role', 'status');
   toast.style.cssText = 'text-align:center;font-size:calc(17px * var(--fs,1));color:#3C5A49;min-height:22px;font-weight:500';
   const btnRow = skipBtn.parentNode;
-  btnRow.parentNode.insertBefore(toast, btnRow); btnRow.parentNode.insertBefore(counter, btnRow);
+  const hint = document.createElement('div');
+  hint.style.cssText = 'text-align:center;font-size:calc(17px * var(--fs,1));color:#55635B;min-height:22px';
+  hint.textContent = '← ปัดซ้ายข้าม  ·  ปัดขวาเลือก →';
+  btnRow.parentNode.insertBefore(toast, btnRow); btnRow.parentNode.insertBefore(counter, btnRow); btnRow.parentNode.insertBefore(hint, btnRow);
   const done = document.createElement('div');
   done.hidden = true;
   done.style.cssText = 'background:#fff;border-radius:28px;border:1px solid #E3E6DA;padding:40px 24px;text-align:center;box-shadow:0 8px 24px rgba(60,90,73,.10)';
@@ -1341,7 +1347,7 @@ renderGreeting();
     if (like) document.dispatchEvent(new CustomEvent('careder:match', { detail: { index: i } }));
     const next = () => {
       i++;
-      if (i >= P.length) { card.hidden = true; done.hidden = false; counter.textContent = ''; skipBtn.disabled = likeBtn.disabled = true; busy = false; return; }
+      if (i >= P.length) { card.hidden = true; done.hidden = false; counter.textContent = ''; hint.hidden = true; busy = false; return; }
       render();
       if (!reduce && card.animate) card.animate([{ transform: 'translateX(' + (-dir * 60) + 'px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 260, easing: 'ease-out' });
       busy = false;
@@ -1349,9 +1355,21 @@ renderGreeting();
     if (reduce || !card.animate) return next();
     card.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateX(' + dir * 160 + 'px) rotate(' + dir * 10 + 'deg)', opacity: 0 }], { duration: 280, easing: 'ease-in' }).onfinish = next;
   }
-  skipBtn.addEventListener('click', () => advance(false));
-  likeBtn.addEventListener('click', () => advance(true));
-  done.querySelector('#match-again').addEventListener('click', () => { i = 0; done.hidden = true; card.hidden = false; skipBtn.disabled = likeBtn.disabled = false; toast.textContent = ''; render(); });
+  skipBtn.setAttribute('aria-label', 'ปิดและกลับหน้าแรก');
+  skipBtn.addEventListener('click', () => go('main', true));
+  done.querySelector('#match-again').addEventListener('click', () => { i = 0; done.hidden = true; card.hidden = false; hint.hidden = false; toast.textContent = ''; render(); });
+  // ----- ปัดการ์ด: ซ้าย = ข้าม, ขวา = เลือก -----
+  card.style.touchAction = 'pan-y'; card.style.userSelect = 'none'; card.style.cursor = 'grab';
+  let sx = 0, dx = 0, drag = false, pid = null;
+  card.addEventListener('pointerdown', e => { if (busy) return; drag = true; sx = e.clientX; dx = 0; pid = e.pointerId; try { card.setPointerCapture(pid); } catch (_) {} card.style.transition = 'none'; });
+  card.addEventListener('pointermove', e => { if (!drag) return; dx = e.clientX - sx; card.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / 20) + 'deg)'; card.style.opacity = String(Math.max(0.4, 1 - Math.abs(dx) / 400)); });
+  function end() {
+    if (!drag) return; drag = false;
+    card.style.transition = ''; card.style.transform = ''; card.style.opacity = '';
+    if (dx > 80) advance(true); else if (dx < -80) advance(false);
+  }
+  card.addEventListener('pointerup', end); card.addEventListener('pointercancel', end);
+  document.addEventListener('keydown', e => { if (root.hidden || card.hidden) return; if (e.key === 'ArrowRight') advance(true); if (e.key === 'ArrowLeft') advance(false); });
   render();
 })();
 
