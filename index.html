@@ -1276,6 +1276,30 @@ renderGreeting();
   try { const s = localStorage.getItem(KEY); if (s) show(s); else box.innerHTML = original; } catch (_) {}
 })();
 
+// ---------- ขอความยินยอม: แสดงโปรไฟล์ของฉันในหน้า Care Match (เปลี่ยนใจได้ทุกเมื่อ) ----------
+(function () {
+  const root = document.getElementById('s-profile'); if (!root) return;
+  const note = [...root.querySelectorAll('p')].find(p => p.textContent.includes('ไม่ต้องใช้ชื่อหรือรูปจริง')); if (!note) return;
+  const page = root.querySelector(':scope > div');
+  if (page) { page.style.overflowY = 'auto'; page.style.scrollbarWidth = 'none'; [...page.children].forEach(c => { c.style.flexShrink = '0'; }); }
+  const KEY = 'careder_match_share';
+  const card = document.createElement('div');
+  card.style.cssText = 'display:flex;align-items:center;gap:12px;box-sizing:border-box;padding:10px 14px;border-radius:16px;background:#E6EEE3;flex:none';
+  card.innerHTML = '<div style="flex:1;min-width:0"><div style="font-size:calc(18px * var(--fs,1));font-weight:700">อนุญาตให้แสดงโปรไฟล์ของฉันในหน้า Care Match</div><div id="share-sub" style="font-size:calc(16px * var(--fs,1));color:#55635B;line-height:1.4"></div></div>' +
+    '<button id="share-sw" type="button" role="switch" aria-label="อนุญาตให้แสดงโปรไฟล์ในหน้า Care Match" aria-checked="false" style="flex:none;width:52px;height:32px;border:0;border-radius:16px;background:#C9D2C4;position:relative;padding:0;cursor:pointer;transition:background .18s"><span style="position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:13px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s"></span></button>';
+  note.parentNode.insertBefore(card, note);
+  const sw = card.querySelector('#share-sw'), sub = card.querySelector('#share-sub');
+  const get = () => { try { return localStorage.getItem(KEY) === '1'; } catch (_) { return false; } };
+  function paint() {
+    const on = get();
+    sw.setAttribute('aria-checked', on); sw.style.background = on ? '#4F7360' : '#C9D2C4'; sw.firstChild.style.transform = on ? 'translateX(20px)' : 'none';
+    sub.textContent = on ? 'เปิดอยู่ · ปิดได้ตลอดที่หน้านี้' : 'ปิดอยู่ · เปิดเมื่อพร้อมให้คนอื่นเห็นโปรไฟล์';
+  }
+  sw.addEventListener('click', () => { try { localStorage.setItem(KEY, get() ? '0' : '1'); } catch (_) {} paint(); });
+  new MutationObserver(() => { if (!root.hidden) paint(); }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
+  paint();
+})();
+
 // ---------- อารมณ์วันนี้: กดอีโมจิได้ + เอฟเฟกต์อ้วนป๋อม ----------
 (function () {
   const MSG = {
@@ -1374,6 +1398,8 @@ renderGreeting();
   let photoIdx = 0;
   const getJ = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || d); } catch (_) { return JSON.parse(d); } };
   function own() {
+    let ok = false; try { ok = localStorage.getItem('careder_match_share') === '1'; } catch (_) {}
+    if (!ok) return null;
     let photos = getJ('careder_photos', '[]').filter(Boolean);
     if (!photos.length) { let a = null; try { a = localStorage.getItem('careder_avatar'); } catch (_) {} if (a) photos = [a]; }
     if (!photos.length) return null;
