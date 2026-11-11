@@ -1310,7 +1310,8 @@ renderGreeting();
   skipBtn.parentNode.style.justifyContent = 'center';
   const TAG = 'background:#E6EEE3;color:#34503F;font-size:calc(16px * var(--fs,1));font-weight:500;padding:6px 14px;border-radius:999px';
 
-  const P = CARE_PROFILES, char = careChar;
+  const P0 = CARE_PROFILES, char = careChar;
+  let P = P0;
   const g = art.querySelector('g');
   const counter = document.createElement('div');
   counter.setAttribute('aria-live', 'polite');
@@ -1329,11 +1330,44 @@ renderGreeting();
   done.innerHTML = '<div style="font-size:calc(23px * var(--fs,1));font-weight:700;margin-bottom:10px">ดูครบทุกโปรไฟล์แล้ว</div><p style="margin:0 0 20px;font-size:calc(18px * var(--fs,1));line-height:1.6;color:#3B4643">เดี๋ยวจะมีเพื่อนผู้ดูแลคนใหม่ๆ มาให้เจอเรื่อยๆ นะคะ</p><button id="match-again" style="height:52px;padding:0 28px;border:0;border-radius:26px;background:#4F7360;color:#fff;font-size:calc(19px * var(--fs,1));font-weight:700">ดูอีกครั้ง</button>';
   card.parentNode.insertBefore(done, card);
 
+  const imgBox = art.parentNode; imgBox.style.position = 'relative';
+  const pic = document.createElement('img'); pic.alt = 'รูปโปรไฟล์ของคุณ';
+  pic.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none';
+  const dots = document.createElement('div');
+  dots.style.cssText = 'position:absolute;left:0;right:0;bottom:10px;display:none;justify-content:center;gap:6px;pointer-events:none';
+  imgBox.appendChild(pic); imgBox.appendChild(dots);
+  let photoIdx = 0;
+  const getJ = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || d); } catch (_) { return JSON.parse(d); } };
+  function own() {
+    let photos = getJ('careder_photos', '[]').filter(Boolean);
+    if (!photos.length) { let a = null; try { a = localStorage.getItem('careder_avatar'); } catch (_) {} if (a) photos = [a]; }
+    if (!photos.length) return null;
+    let n = ''; try { n = localStorage.getItem('careder_name') || ''; } catch (_) {}
+    const age = ((document.getElementById('ag') || {}).value || '').trim(), bio = ((document.getElementById('bio') || {}).value || '').trim();
+    const esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    return { own: true, photos, name: (n ? 'คุณ' + n : 'คุณ') + (age ? ', ' + age : ''), desc: bio ? esc(bio) : 'นี่คือโปรไฟล์ของคุณ คนอื่นจะเห็นแบบนี้', tags: ['โปรไฟล์ของคุณ'], online: true };
+  }
+  function sig(o) { return o ? o.name + '|' + o.desc + '|' + o.photos.join('').length + '|' + o.photos.length : ''; }
+  let lastSig = '';
+  function rebuild() {
+    const o = own(), sg = sig(o);
+    if (sg === lastSig) return; lastSig = sg;
+    P = o ? [o].concat(P0) : P0; i = 0; photoIdx = 0;
+    card.hidden = false; done.hidden = true; hint.hidden = false; render();
+  }
+  imgBox.addEventListener('click', () => { const p = P[i]; if (p && p.own && p.photos.length > 1) { photoIdx = (photoIdx + 1) % p.photos.length; showPic(p); } });
+  function showPic(p) {
+    if (p.own) {
+      pic.src = p.photos[photoIdx % p.photos.length]; pic.style.display = 'block'; art.style.display = 'none';
+      dots.style.display = p.photos.length > 1 ? 'flex' : 'none';
+      dots.innerHTML = p.photos.map((_, k) => '<span style="width:8px;height:8px;border-radius:4px;background:' + (k === photoIdx ? '#fff' : 'rgba(255,255,255,.55)') + ';box-shadow:0 0 3px rgba(0,0,0,.4)"></span>').join('');
+    } else { pic.style.display = 'none'; dots.style.display = 'none'; art.style.display = ''; }
+  }
   let i = 0, busy = false;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function render() {
-    const p = P[i];
-    g.innerHTML = char(p);
+    const p = P[i]; photoIdx = 0; showPic(p);
+    if (!p.own) g.innerHTML = char(p);
     nameEl.textContent = p.name; descEl.innerHTML = p.desc;
     tagsEl.innerHTML = p.tags.map(t => `<span style="${TAG}">${t}</span>`).join('');
     badge.textContent = p.online ? 'ออนไลน์' : 'ออฟไลน์';
@@ -1343,8 +1377,8 @@ renderGreeting();
   function advance(like) {
     if (busy) return; busy = true;
     const p = P[i], dir = like ? 1 : -1;
-    toast.textContent = like ? 'ส่งคำขอคุยกับ ' + p.name.split(',')[0] + ' แล้ว (ดูที่แชต)' : '';
-    if (like) document.dispatchEvent(new CustomEvent('careder:match', { detail: { index: i } }));
+    toast.textContent = like ? (p.own ? 'นี่คือโปรไฟล์ของคุณเอง ลองปัดดูคนอื่นต่อได้เลยค่ะ' : 'ส่งคำขอคุยกับ ' + p.name.split(',')[0] + ' แล้ว (ดูที่แชต)') : '';
+    if (like && !p.own) document.dispatchEvent(new CustomEvent('careder:match', { detail: { index: i } }));
     const next = () => {
       i++;
       if (i >= P.length) { card.hidden = true; done.hidden = false; counter.textContent = ''; hint.hidden = true; busy = false; return; }
@@ -1371,6 +1405,8 @@ renderGreeting();
   card.addEventListener('pointerup', end); card.addEventListener('pointercancel', end);
   document.addEventListener('keydown', e => { if (root.hidden || card.hidden) return; if (e.key === 'ArrowRight') advance(true); if (e.key === 'ArrowLeft') advance(false); });
   render();
+  rebuild();
+  new MutationObserver(() => { if (!root.hidden) rebuild(); }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
 })();
 
 // ---------- Care Chat: แชต + โทรคุยกับคนที่แมชแล้ว (ตัวอย่างในเครื่อง ยังไม่มีเซิร์ฟเวอร์จริง) ----------

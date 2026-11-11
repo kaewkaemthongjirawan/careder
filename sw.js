@@ -1,5 +1,5 @@
 // Careder service worker: precache app shell, cache-first with network refresh
-const VERSION = 'careder-v36';
+const VERSION = 'careder-v37';
 const SHELL = ['./', './index.html', './manifest.json', './firebase-config.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
 
