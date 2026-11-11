@@ -1814,6 +1814,50 @@ renderGreeting();
   paint(); name();
 })();
 
+// ---------- เปลี่ยนรูปโปรไฟล์ในหน้าตั้งค่า (ใช้คีย์เดียวกับหน้าโปรไฟล์) ----------
+(function () {
+  const root = document.getElementById('s-settings'); if (!root) return;
+  const box = root.querySelector('div[style*="width: 64px"][style*="height: 64px"]'); if (!box) return;
+  const KEY = 'careder_avatar', original = box.innerHTML;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;width:64px;height:64px;flex:none';
+  box.parentNode.insertBefore(wrap, box); wrap.appendChild(box);
+  const cam = document.createElement('button');
+  cam.setAttribute('aria-label', 'เปลี่ยนรูปโปรไฟล์');
+  cam.style.cssText = 'position:absolute;right:-4px;bottom:-4px;width:28px;height:28px;border-radius:14px;border:2px solid #E6EEE3;background:#4F7360;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer';
+  cam.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  wrap.appendChild(cam);
+  box.style.cursor = 'pointer';
+  const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.hidden = true; wrap.appendChild(input);
+  function paint() {
+    let s = null; try { s = localStorage.getItem(KEY); } catch (_) {}
+    if (s) { box.innerHTML = '<img alt="รูปโปรไฟล์" style="width:100%;height:100%;object-fit:cover;display:block">'; box.firstChild.src = s; }
+    else box.innerHTML = original;
+  }
+  function square(file, size) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const s = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = size;
+        c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+        URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad image')); };
+      img.src = url;
+    });
+  }
+  const pick = () => input.click();
+  cam.addEventListener('click', pick); box.addEventListener('click', pick);
+  input.addEventListener('change', async () => {
+    const f = input.files && input.files[0]; if (!f) return;
+    try { const src = await square(f, 400); try { localStorage.setItem(KEY, src); } catch (_) {} paint(); }
+    catch (_) { alert('ไม่สามารถเปิดไฟล์รูปนี้ได้'); }
+    input.value = '';
+  });
+  new MutationObserver(() => { if (!root.hidden) paint(); }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
+  paint();
+})();
+
 // ---------- Care Break: จับเวลาฝึกหายใจ 1 นาที (วงแหวนรอบปุ่ม + เสียงระฆังเมื่อครบ) ----------
 (function () {
   const root = document.getElementById('s-break');
