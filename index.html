@@ -981,8 +981,9 @@ if (typeof module !== 'undefined' && typeof careChar === 'undefined') { const _c
 const CC_FONT = "font-family:'Noto Sans Thai','Leelawadee UI',sans-serif";
 const ccEsc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const ccFirst = p => p.name.split(',')[0];
+const ccProf = c => c.prof || CARE_PROFILES[c.pi];
 function ccAvatar(p, s, online) {
-  return `<div style="position:relative;width:${s}px;height:${s}px;flex:none"><div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#DCE8D8"><svg width="${s}" height="${s}" viewBox="8 4 84 84" aria-hidden="true">${careChar(p)}</svg></div>${online ? `<span style="position:absolute;right:0;bottom:0;width:${Math.round(s / 4)}px;height:${Math.round(s / 4)}px;border-radius:50%;background:#4CAF7A;border:2px solid #F6F4EC"></span>` : ''}</div>`;
+  return `<div style="position:relative;width:${s}px;height:${s}px;flex:none"><div style="width:100%;height:100%;border-radius:50%;overflow:hidden;background:#DCE8D8">${p.img ? `<img alt="" src="${p.img}" style="width:100%;height:100%;object-fit:cover;display:block">` : `<svg width="${s}" height="${s}" viewBox="8 4 84 84" aria-hidden="true">${careChar(p)}</svg>`}</div>${online ? `<span style="position:absolute;right:0;bottom:0;width:${Math.round(s / 4)}px;height:${Math.round(s / 4)}px;border-radius:50%;background:#4CAF7A;border:2px solid #F6F4EC"></span>` : ''}</div>`;
 }
 const ccIcon = {
   back: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#25312B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -1064,8 +1065,8 @@ const CC_SEED = [
     { from: 'me', text: 'พรุ่งนี้ว่างคุยกันตอนไหนคะ', time: 'จ.' } ] }
 ];
 function ccListData(convos) {
-  return { matches: convos.map(c => CARE_PROFILES[c.pi]),
-    convos: convos.map(c => { const l = c.msgs.filter(m => m.from !== 'sys').slice(-1)[0]; return { p: CARE_PROFILES[c.pi], last: l ? (l.from === 'me' ? 'คุณ: ' : '') + l.text : 'เริ่มทักทายกันได้เลย', time: c.time, unread: c.unread }; }) };
+  return { matches: convos.map(c => ccProf(c)),
+    convos: convos.map(c => { const l = c.msgs.filter(m => m.from !== 'sys').slice(-1)[0]; return { p: ccProf(c), last: l ? (l.from === 'me' ? 'คุณ: ' : '') + l.text : 'เริ่มทักทายกันได้เลย', time: c.time, unread: c.unread }; }) };
 }
 if (typeof module !== 'undefined') module.exports = { ccListScreen, ccChatScreen, ccCallScreen, CC_SEED, ccListData };
 
@@ -1295,8 +1296,32 @@ renderGreeting();
     sw.setAttribute('aria-checked', on); sw.style.background = on ? '#4F7360' : '#C9D2C4'; sw.firstChild.style.transform = on ? 'translateX(20px)' : 'none';
     sub.textContent = on ? 'เปิดอยู่ · ปิดได้ตลอดที่หน้านี้' : 'ปิดอยู่ · เปิดเมื่อพร้อมให้คนอื่นเห็นโปรไฟล์';
   }
-  sw.addEventListener('click', () => { try { localStorage.setItem(KEY, get() ? '0' : '1'); } catch (_) {} paint(); });
-  new MutationObserver(() => { if (!root.hidden) paint(); }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
+  // ----- ส่งโปรไฟล์ขึ้นฐานข้อมูลกลางเมื่ออนุญาต / ลบออกเมื่อปิด -----
+  function shrink(src, max) {
+    return new Promise(res => { const img = new Image(); img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', 0.7)); }; img.onerror = () => res(''); img.src = src; });
+  }
+  let pubT = null, pubBusy = false;
+  async function publish() {
+    if (!window.CCloud || !CCloud.enabled) return;
+    if (pubBusy) { pubT = setTimeout(publish, 1500); return; }
+    pubBusy = true;
+    try {
+      await CCloud.init(); const uid = CCloud.uid();
+      if (!get()) { await CCloud.delProfile(uid); }
+      else {
+        let ph = []; try { ph = JSON.parse(localStorage.getItem('careder_photos') || '[]').filter(Boolean); } catch (_) {}
+        if (!ph.length) { let a = null; try { a = localStorage.getItem('careder_avatar'); } catch (_) {} if (a) ph = [a]; }
+        const small = (await Promise.all(ph.slice(0, 3).map(x => shrink(x, 480)))).filter(Boolean);
+        let n = ''; try { n = localStorage.getItem('careder_name') || ''; } catch (_) {}
+        await CCloud.putProfile(uid, { uid: uid, name: n || 'ผู้ใช้', age: ((document.getElementById('ag') || {}).value || '').trim().slice(0, 12), bio: ((document.getElementById('bio') || {}).value || '').trim().slice(0, 300), photos: small, upd: Date.now() });
+      }
+    } catch (e) { console.warn('publish profile', e); }
+    pubBusy = false;
+  }
+  sw.addEventListener('click', () => { try { localStorage.setItem(KEY, get() ? '0' : '1'); } catch (_) {} paint(); publish(); });
+  new MutationObserver(() => { if (!root.hidden) paint(); else if (get()) { clearTimeout(pubT); pubT = setTimeout(publish, 400); } }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
+  [...root.querySelectorAll('button')].forEach(b => { if (b.textContent.trim() === 'บันทึก') b.addEventListener('click', () => { if (get()) setTimeout(publish, 300); }); });
+  if (get()) setTimeout(publish, 2500);
   paint();
 })();
 
@@ -1409,16 +1434,39 @@ renderGreeting();
     return { own: true, photos, name: (n ? 'คุณ' + n : 'คุณ') + (age ? ', ' + age : ''), desc: bio ? esc(bio) : 'นี่คือโปรไฟล์ของคุณ คนอื่นจะเห็นแบบนี้', tags: ['โปรไฟล์ของคุณ'], online: true };
   }
   function sig(o) { return o ? o.name + '|' + o.desc + '|' + o.photos.join('').length + '|' + o.photos.length : ''; }
-  let lastSig = '';
-  function rebuild() {
-    const o = own(), sg = sig(o);
+  const SEENK = 'careder_match_seen';
+  const seenSet = () => getJ(SEENK, '[]');
+  const esc2 = t => String(t || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  async function loadReal() {
+    if (!window.CCloud || !CCloud.enabled) return [];
+    try {
+      await CCloud.init(); const seen = seenSet();
+      return (await CCloud.profiles()).filter(r => seen.indexOf(r._id) < 0 && (r.photos || []).length).map(r => ({ real: true, uid: r._id, photos: r.photos, img: r.photos[0], name: 'คุณ' + (r.name || 'ผู้ใช้') + (r.age ? ', ' + r.age : ''), rawName: r.name || 'ผู้ใช้', desc: r.bio ? esc2(r.bio) : 'ผู้ใช้ Careder', tags: ['ผู้ใช้จริง'], online: true }));
+    } catch (e) { console.warn('profiles', e); return []; }
+  }
+  function realAction(p, like) {
+    try { const s = seenSet(); s.push(p.uid); localStorage.setItem(SEENK, JSON.stringify(s.slice(-300))); } catch (_) {}
+    if (!like) return;
+    let me = ''; try { me = localStorage.getItem('careder_name') || ''; } catch (_) {}
+    const mine = own(); const meInfo = { name: 'คุณ' + (me || 'ผู้ใช้'), img: mine ? mine.photos[0] : '' };
+    const other = { uid: p.uid, name: p.name.split(',')[0], img: p.img };
+    CCloud.openChat(other, meInfo).then(cid => {
+      document.dispatchEvent(new CustomEvent('careder:realmatch', { detail: { cid, uid: p.uid, name: other.name, img: other.img } }));
+      CCloud.notify(p.uid, 'match', meInfo.name, meInfo.name + ' อยากคุยกับคุณ ลองทักทายกันได้เลย');
+    }).catch(e => console.warn('openChat', e));
+  }
+  let lastSig = '', building = false;
+  async function rebuild() {
+    if (building) return; building = true;
+    const o = own(), real = await loadReal(), sg = sig(o) + '#' + real.map(r => r.uid).join(',');
+    building = false;
     if (sg === lastSig) return; lastSig = sg;
-    P = o ? [o].concat(P0) : P0; i = 0; photoIdx = 0;
+    P = (o ? [o] : []).concat(real, P0); i = 0; photoIdx = 0;
     card.hidden = false; done.hidden = true; hint.hidden = false; render();
   }
-  imgBox.addEventListener('click', () => { const p = P[i]; if (p && p.own && p.photos.length > 1) { photoIdx = (photoIdx + 1) % p.photos.length; showPic(p); } });
+  imgBox.addEventListener('click', () => { const p = P[i]; if (p && p.photos && p.photos.length > 1) { photoIdx = (photoIdx + 1) % p.photos.length; showPic(p); } });
   function showPic(p) {
-    if (p.own) {
+    if (p.photos) {
       pic.src = p.photos[photoIdx % p.photos.length]; pic.style.display = 'block'; art.style.display = 'none';
       dots.style.display = p.photos.length > 1 ? 'flex' : 'none';
       dots.innerHTML = p.photos.map((_, k) => '<span style="width:8px;height:8px;border-radius:4px;background:' + (k === photoIdx ? '#fff' : 'rgba(255,255,255,.55)') + ';box-shadow:0 0 3px rgba(0,0,0,.4)"></span>').join('');
@@ -1428,18 +1476,19 @@ renderGreeting();
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function render() {
     const p = P[i]; photoIdx = 0; showPic(p);
-    if (!p.own) g.innerHTML = char(p);
+    if (!p.photos) g.innerHTML = char(p);
     nameEl.textContent = p.name; descEl.innerHTML = p.desc;
     tagsEl.innerHTML = p.tags.map(t => `<span style="${TAG}">${t}</span>`).join('');
-    badge.textContent = p.online ? 'ออนไลน์' : 'ออฟไลน์';
+    badge.textContent = p.real ? 'ผู้ใช้ Careder' : p.online ? 'ออนไลน์' : 'ออฟไลน์';
     badge.style.background = p.online ? '#4F7360' : '#8A948D';
     counter.textContent = (i + 1) + ' / ' + P.length;
   }
   function advance(like) {
     if (busy) return; busy = true;
     const p = P[i], dir = like ? 1 : -1;
+    if (p.real) realAction(p, like);
     toast.textContent = like ? (p.own ? 'นี่คือโปรไฟล์ของคุณเอง ลองปัดดูคนอื่นต่อได้เลยค่ะ' : 'ส่งคำขอคุยกับ ' + p.name.split(',')[0] + ' แล้ว (ดูที่แชต)') : '';
-    if (like && !p.own) document.dispatchEvent(new CustomEvent('careder:match', { detail: { index: i } }));
+    if (like && !p.own && !p.real) document.dispatchEvent(new CustomEvent('careder:match', { detail: { index: i } }));
     const next = () => {
       i++;
       if (i >= P.length) { card.hidden = true; done.hidden = false; counter.textContent = ''; hint.hidden = true; busy = false; return; }
@@ -1488,7 +1537,7 @@ renderGreeting();
   function box() { return document.getElementById('chat-msgs'); }
   function renderChat(keepInput) {
     const input = document.getElementById('chat-in'), v = keepInput && input ? input.value : '';
-    sec('chat').innerHTML = ccChatScreen(CARE_PROFILES[cur.pi], cur.msgs, false);
+    sec('chat').innerHTML = ccChatScreen(ccProf(cur), cur.msgs, false);
     if (v) document.getElementById('chat-in').value = v;
     box().scrollTop = box().scrollHeight;
   }
@@ -1496,7 +1545,7 @@ renderGreeting();
     cur.msgs.push(m);
     if (m.from !== 'sys') cur.time = m.time || now();
     save();
-    if (toChat && box()) { box().insertAdjacentHTML('beforeend', ccBubble(m, CARE_PROFILES[cur.pi])); box().scrollTop = box().scrollHeight; }
+    if (toChat && box()) { box().insertAdjacentHTML('beforeend', ccBubble(m, ccProf(cur))); box().scrollTop = box().scrollHeight; }
   }
   function openChat(key) {
     cur = convos.find(c => c.key === key); if (!cur) return;
@@ -1504,10 +1553,11 @@ renderGreeting();
   }
   function send(text) {
     text = (text || '').trim(); if (!text || !cur) return;
-    const c = cur, p = CARE_PROFILES[c.pi];
+    const c = cur, p = ccProf(c);
     addMsg({ from: 'me', text, time: now() }, true);
     const inp = document.getElementById('chat-in'); if (inp) inp.value = '';
     clearTimeout(replyT);
+    if (c.real) { c.sent = (c.sent || 0) + 1; CCloud.send(c.cid, text).catch(() => addMsg({ from: 'sys', text: 'ส่งข้อความไม่สำเร็จ ลองใหม่อีกครั้งนะคะ' }, true)); return; }
     if (!p.online) { addMsg({ from: 'sys', text: ccFirst(p) + ' ออฟไลน์อยู่ จะเห็นข้อความเมื่อกลับมาออนไลน์' }, true); return; }
     replyT = setTimeout(() => {
       if (cur === c && box()) box().insertAdjacentHTML('beforeend', '<div id="typing" style="align-self:flex-start;color:#7A857E;font-size:calc(16px * var(--fs,1));padding-left:4px">' + ccEsc(ccFirst(p)) + ' กำลังพิมพ์...</div>');
@@ -1525,10 +1575,11 @@ renderGreeting();
   }
   function renderCall() {
     const el = document.getElementById('call-status'), status = el ? el.textContent : 'กำลังเชื่อมต่อ...';
-    sec('call').innerHTML = ccCallScreen(CARE_PROFILES[cur.pi], { video: call.video, status: call.status || status, muted: call.muted, speaker: call.speaker });
+    sec('call').innerHTML = ccCallScreen(ccProf(cur), { video: call.video, status: call.status || status, muted: call.muted, speaker: call.speaker });
   }
   function startCall(kind) {
-    const p = CARE_PROFILES[cur.pi];
+    if (cur.real) { addMsg({ from: 'sys', text: 'เวอร์ชันนี้ยังไม่รองรับการโทรจริง ทักแชตกันก่อนได้เลยค่ะ' }, true); return; }
+    const p = ccProf(cur);
     call = { video: kind === 'video', muted: false, speaker: true, status: 'กำลังเชื่อมต่อ...', c: cur };
     clearInterval(callT); callSec = 0; renderCall(); go('call');
     setTimeout(() => {
@@ -1567,6 +1618,49 @@ renderGreeting();
     convos.unshift({ key, pi: i, time: now(), unread: 0, msgs: [{ from: 'sys', text: 'คุณและ' + key + ' แมชกันแล้ว! ลองทักทายกันได้เลย' }] });
     save();
   });
+  // ----- แชตจริงกับผู้ใช้ Careder คนอื่น (ผ่านฐานข้อมูลกลาง) -----
+  const uniqKey = (name, uid) => { let k = name; if (convos.some(c => c.key === k && c.cid && c.uid !== uid)) k = name + ' ' + uid.slice(0, 3); return k; };
+  function ensureReal(info) {
+    let c = convos.find(x => x.cid === info.cid);
+    if (!c) {
+      c = { key: uniqKey(info.name, info.uid), real: true, cid: info.cid, uid: info.uid, time: now(), unread: 0, msgs: [{ from: 'sys', text: 'คุณและ' + info.name + ' เริ่มแชตกันแล้ว! ลองทักทายกันได้เลย' }], got: 0 };
+      c.prof = { name: c.key, online: true, img: info.img || '', look: 'long', hair: '#5A3E33', skin: '#F8D6BC', top: '#9DB8A5', tags: [] };
+      convos.unshift(c); save();
+    }
+    return c;
+  }
+  async function pull(c, force) {
+    try {
+      const rows = await CCloud.messages(c.cid), me = CCloud.uid();
+      const incoming = rows.filter(r => r.from !== me).length;
+      if (!force && rows.length === (c.n || 0)) return;
+      const hadOpen = cur === c && active() === 'chat';
+      c.n = rows.length;
+      c.msgs = [c.msgs[0]].concat(rows.map(r => ({ from: r.from === me ? 'me' : 'them', text: r.text, time: (() => { const d = new Date(r.at); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); })() })));
+      if (rows.length) c.time = c.msgs[c.msgs.length - 1].time;
+      if (hadOpen) { c.got = incoming; renderChat(true); }
+      else if (incoming > (c.got || 0)) { c.unread = (c.unread || 0) + (incoming - (c.got || 0)); c.got = incoming; document.dispatchEvent(new CustomEvent('careder:newmsg', { detail: { name: c.key, count: incoming } })); }
+      save();
+    } catch (e) { console.warn('chat pull', e); }
+  }
+  let syncing = false;
+  async function syncReal() {
+    if (!window.CCloud || !CCloud.enabled || syncing || document.hidden) return; syncing = true;
+    try {
+      await CCloud.init(); const me = CCloud.uid(), list = await CCloud.chats();
+      for (const d of list) {
+        const ou = (d.members || []).find(u => u !== me); if (!ou) continue;
+        const pr = (d.people || {})[ou] || {};
+        const c = ensureReal({ cid: d._id, uid: ou, name: pr.n || 'ผู้ใช้', img: pr.img || '' });
+        if ((d.upd || 0) !== (c.upd || 0) || !c.n) { c.upd = d.upd || 0; await pull(c, true); }
+      }
+    } catch (e) { console.warn('chat sync', e); }
+    syncing = false;
+  }
+  window.CareChat = { ensureReal, sync: syncReal, open: key => openChat(key) };
+  document.addEventListener('careder:realmatch', ev => { const c = ensureReal(ev.detail); if (c) pull(c, true); });
+  setInterval(() => { if (cur && cur.real && active() === 'chat') pull(cur, false); else syncReal(); }, 6000);
+  if (window.CCloud && CCloud.enabled) setTimeout(syncReal, 1500);
   renderList();
 })();
 
@@ -1774,10 +1868,17 @@ renderGreeting();
     else if (Date.now() > auth.exp) { try { await refresh(); } catch (_) { auth = null; await signUp(); } }
     return auth.id;
   }
-  async function api(path, body) {
+  async function api(path, body, method) {
     const t = await token();
-    return jf(FS + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify(body) });
+    const o = { method: method || 'POST', headers: { Authorization: 'Bearer ' + t } };
+    if (body !== undefined) { o.headers['Content-Type'] = 'application/json'; o.body = JSON.stringify(body); }
+    return jf(FS + path, o);
   }
+  const enc = v => typeof v === 'string' ? { stringValue: v } : typeof v === 'number' ? { integerValue: String(Math.round(v)) } : typeof v === 'boolean' ? { booleanValue: v } : Array.isArray(v) ? { arrayValue: v.length ? { values: v.map(enc) } : {} } : { mapValue: { fields: Object.fromEntries(Object.entries(v).map(([k, x]) => [k, enc(x)])) } };
+  const encF = o => Object.fromEntries(Object.entries(o).map(([k, x]) => [k, enc(x)]));
+  const decDoc = d => { const f = d.fields || {}; const o = Object.fromEntries(Object.entries(f).map(([k, x]) => [k, val(x)])); o._id = d.name.split('/').pop(); return o; };
+  const q = (parent, sq) => api(parent + ':runQuery', { structuredQuery: sq }).then(r => r.filter(x => x.document).map(x => decDoc(x.document)));
+  const eq = (f, v, op) => ({ fieldFilter: { field: { fieldPath: f }, op: op || 'EQUAL', value: { stringValue: v } } });
   const S = v => ({ stringValue: String(v) });
   const val = f => f ? (f.stringValue !== undefined ? f.stringValue : f.integerValue !== undefined ? +f.integerValue : f.timestampValue !== undefined ? Date.parse(f.timestampValue) : f.arrayValue ? (f.arrayValue.values || []).map(val) : f.mapValue ? Object.fromEntries(Object.entries(f.mapValue.fields || {}).map(([k, x]) => [k, val(x)])) : null) : null;
   const toPost = d => { const f = d.fields || {}; return { id: d.name.split('/').pop(), uid: val(f.uid), name: val(f.name) || 'ผู้ใช้', avatar: val(f.avatar) || '', topic: val(f.topic) || 'share', image: val(f.image) || '', text: val(f.text) || '', ts: val(f.createdAt) || 0, likedBy: val(f.likedBy) || [], comments: val(f.comments) || [] }; };
@@ -1799,6 +1900,30 @@ renderGreeting();
       const d = await api('/posts', { fields });
       return toPost(d);
     },
+    // ----- โปรไฟล์ที่แชร์ใน Care Match -----
+    putProfile(uid, p) { return api('/profiles/' + uid, { fields: encF(p) }, 'PATCH'); },
+    delProfile(uid) { return api('/profiles/' + uid, undefined, 'DELETE').catch(e => { if (e.status !== 404) throw e; }); },
+    async profiles() { await token(); return (await q('', { from: [{ collectionId: 'profiles' }], limit: 60 })).filter(p => p._id !== auth.uid); },
+    // ----- แชตจริง -----
+    async openChat(other, me) {
+      await token(); const a = auth.uid, b = other.uid, cid = [a, b].sort().join('_');
+      const doc = { members: [a, b], people: { [a]: { n: me.name, img: me.img || '' }, [b]: { n: other.name, img: other.img || '' } }, upd: Date.now(), last: '' };
+      try { await api('/chats/' + cid + '?currentDocument.exists=false', { fields: encF(doc) }, 'PATCH'); } catch (e) { if (e.status !== 409 && !/ALREADY|exists/i.test(String(e.message))) throw e; }
+      return cid;
+    },
+    async chats() { await token(); return q('', { from: [{ collectionId: 'chats' }], where: eq('members', auth.uid, 'ARRAY_CONTAINS'), limit: 50 }); },
+    messages(cid) { return q('/chats/' + cid, { from: [{ collectionId: 'messages' }], orderBy: [{ field: { fieldPath: 'at' }, direction: 'ASCENDING' }], limit: 300 }); },
+    async send(cid, text) {
+      await token(); const at = Date.now();
+      await api('/chats/' + cid + '/messages', { fields: encF({ from: auth.uid, text: text, at: at }) });
+      await api('/chats/' + cid + '?updateMask.fieldPaths=upd&updateMask.fieldPaths=last', { fields: encF({ upd: at, last: text.slice(0, 60) }) }, 'PATCH').catch(() => {});
+    },
+    // ----- การแจ้งเตือน -----
+    async notify(toUid, type, name, text, extra) {
+      if (!toUid) return; await token(); if (toUid === auth.uid) return;
+      return api('/notifs', { fields: encF(Object.assign({ toUid: toUid, fromUid: auth.uid, type: type, name: name, text: text, at: Date.now() }, extra || {})) }).catch(() => {});
+    },
+    async notifs() { await token(); return (await q('', { from: [{ collectionId: 'notifs' }], where: eq('toUid', auth.uid), limit: 60 })).sort((x, y) => y.at - x.at); },
     like(id, on) { return api(':commit', tf(id, 'likedBy', on ? 'appendMissingElements' : 'removeAllFromArray', S(auth.uid))); },
     comment(id, c) { return api(':commit', tf(id, 'comments', 'appendMissingElements', { mapValue: { fields: { uid: S(auth.uid), n: S(c.n), t: S(c.t), at: { integerValue: String(Date.now()) } } } })); }
   };
@@ -1855,7 +1980,7 @@ renderGreeting();
   function send() {
     const t = cin.value.trim(); if (!t || open < 0) return;
     if (isC(open)) {
-      const r = cloudMap[open.slice(2)]; if (r) { r.comments.push({ uid: CCloud.uid(), n: myName(), t: t.slice(0, 300) }); CCloud.comment(r.id, { n: myName(), t: t.slice(0, 300) }).catch(() => {}); }
+      const r = cloudMap[open.slice(2)]; if (r) { r.comments.push({ uid: CCloud.uid(), n: myName(), t: t.slice(0, 300) }); CCloud.comment(r.id, { n: myName(), t: t.slice(0, 300) }).catch(() => {}); CCloud.notify(r.uid, 'comment', myName(), myName() + ' แสดงความคิดเห็นในโพสต์ของคุณ: “' + t.slice(0, 40) + '”', { post: r.id }); }
       cin.value = ''; renderList(); paintPost(getPost(open)); return;
     }
     (st.cm[open] = st.cm[open] || []).push({ n: myName(), t: t.slice(0, 300) });
@@ -1869,7 +1994,9 @@ renderGreeting();
       const r = cloudMap[sid.slice(2)], me = CCloud.uid(); if (!r || !me) return;
       const on = r.likedBy.indexOf(me) < 0;
       r.likedBy = on ? r.likedBy.concat(me) : r.likedBy.filter(x => x !== me);
-      CCloud.like(r.id, on).catch(() => {}); return paintCloud(p);
+      CCloud.like(r.id, on).catch(() => {});
+      if (on) CCloud.notify(r.uid, 'like', myName(), myName() + ' ถูกใจโพสต์ของคุณ', { post: r.id });
+      return paintCloud(p);
     }
     if (b.dataset.act === 'like') st.lk[id] = !st.lk[id];
     if (b.dataset.act === 'save') st.sv[id] = !st.sv[id];
@@ -2225,7 +2352,16 @@ renderGreeting();
   let mine = [];
   try { mine = JSON.parse(localStorage.getItem(NKEY) || '[]'); } catch (_) {}
 
+  let cloud = [], chatEv = [];
+  const KINDS = { match: 'แมชกับคุณ', like: 'ถูกใจโพสต์ของคุณ', comment: 'แสดงความคิดเห็นในโพสต์ของคุณ', chat: 'ส่งข้อความถึงคุณ' };
   const matchTpl = feed.querySelector('[data-type=match]');
+  function buildCloud(r) {
+    const n = matchTpl.cloneNode(true); n.dataset.cloud = '1'; n.dataset.type = r.type;
+    const tx = r.type === 'match' ? '<b>' + esc(r.name || 'ผู้ใช้') + '</b> อยากคุยกับคุณ ลองทักทายกันได้เลย' : r.type === 'chat' ? '<b>' + esc(r.name) + '</b> ส่งข้อความถึงคุณ' : esc(r.text || '').replace(esc(r.name || '\u0000'), '<b>' + esc(r.name || '') + '</b>');
+    n.querySelector('[data-ntext]').innerHTML = tx;
+    n.querySelector('[data-ntime]').dataset.ts = r.at; n.querySelector('[data-ntime]').textContent = ago(r.at);
+    return n;
+  }
   function buildMatch(r) {
     const n = matchTpl.cloneNode(true); n.dataset.mine = '1';
     n.querySelector('[data-ntext]').innerHTML = '<b>' + esc(r.name) + '</b> แมชกับคุณแล้ว ลองทักทายกันได้เลย';
@@ -2235,7 +2371,8 @@ renderGreeting();
   function render() {
     const st = readSt();
     root.querySelector('[data-heal-today]').textContent = HEAL[dayNo() % HEAL.length];
-    [...feed.querySelectorAll('[data-mine]')].forEach(n => n.remove());
+    [...feed.querySelectorAll('[data-mine],[data-cloud]')].forEach(n => n.remove());
+    cloud.concat(chatEv).sort((a, b) => b.at - a.at).slice(0, 25).reverse().forEach(r => feed.insertBefore(buildCloud(r), feed.firstChild));
     mine.slice().sort((a, b) => a.ts - b.ts).forEach(r => feed.insertBefore(buildMatch(r), feed.firstChild));
     let shown = 0;
     [...feed.querySelectorAll('[data-type]')].forEach(n => { const on = !!st[n.dataset.type]; n.style.display = on ? 'flex' : 'none'; if (on) shown++; const t = n.querySelector('[data-ntime][data-ts]'); if (t) t.textContent = ago(+t.dataset.ts); });
@@ -2255,7 +2392,7 @@ renderGreeting();
 
   // จุดแดงที่กระดิ่งหน้าแรก: มีเมื่อมีรายการใหม่ที่ยังไม่ได้เปิดดู (ฮีลใจรายวัน / แมชใหม่)
   const dot = document.querySelector('#s-main [data-bell-dot]');
-  const stamp = () => today() + ':' + mine.length;
+  const stamp = () => today() + ':' + mine.length + ':' + Math.max(0, ...cloud.concat(chatEv).map(r => r.at));
   function paintDot() { if (!dot) return; let seen = ''; try { seen = localStorage.getItem(SEEN) || ''; } catch (_) {} dot.style.display = seen === stamp() ? 'none' : 'block'; }
   new MutationObserver(() => { if (!root.hidden) { render(); try { localStorage.setItem(SEEN, stamp()); } catch (_) {} paintDot(); } }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
   const mainEl = document.getElementById('s-main');
@@ -2267,6 +2404,20 @@ renderGreeting();
     try { localStorage.setItem(NKEY, JSON.stringify(mine)); } catch (_) {}
     paintDot();
   });
+  document.addEventListener('careder:newmsg', ev => { chatEv.push({ type: 'chat', name: ev.detail.name, at: Date.now() }); chatEv = chatEv.slice(-10); if (!root.hidden) render(); paintDot(); });
+  let polling = false;
+  async function poll() {
+    if (!window.CCloud || !CCloud.enabled || polling || document.hidden) return; polling = true;
+    try {
+      await CCloud.init(); const rows = await CCloud.notifs(), had = cloud.length ? cloud[0].at : 0;
+      cloud = rows.map(r => ({ type: r.type, name: r.name, text: r.text, at: r.at }));
+      if (!root.hidden) { render(); try { localStorage.setItem(SEEN, stamp()); } catch (_) {} }
+      paintDot();
+      if (cloud.length && cloud[0].at > had && had && document.visibilityState === 'visible' && window.Notification && Notification.permission === 'granted') { try { new Notification('Careder', { body: (cloud[0].name || '') + ' ' + (KINDS[cloud[0].type] || ''), icon: 'icons/icon-192.png' }); } catch (_) {} }
+    } catch (e) { console.warn('notif poll', e); }
+    polling = false;
+  }
+  if (window.CCloud && CCloud.enabled) { setInterval(poll, 15000); setTimeout(poll, 2000); }
   render(); paintDot();
 })();
 
